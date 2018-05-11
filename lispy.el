@@ -560,62 +560,70 @@ Use the command `%s' to change this variable."
 Return t if moved at least once,
 otherwise call function `lispy-right' and return nil."
   (interactive "p")
-  (when (= arg 0)
-    (setq arg 2000))
-  (lispy--exit-string)
-  (let ((bnd (lispy--bounds-comment)))
-    (when bnd
-      (goto-char (1+ (cdr bnd)))))
-  (let ((pt (point))
-        (r (lispy-dotimes arg
-             (when (= (point) (point-max))
-               (error "Reached end of buffer"))
-             (forward-list))))
-    ;; `forward-list' returns true at and of buffer
-    (if (or (null r)
-            (= pt (point))
-            (and (not (lispy-right-p))
-                 (progn
-                   (backward-list)
-                   (forward-list)
-                   (= pt (point)))))
-        (prog1 nil
-          (lispy--out-forward 1))
-      (point))))
+  (if (or
+       (looking-at "\"")
+       (looking-back "\""))
+      (insert "]")
+    (when (= arg 0)
+      (setq arg 2000))
+    (lispy--exit-string)
+    (let ((bnd (lispy--bounds-comment)))
+      (when bnd
+        (goto-char (1+ (cdr bnd)))))
+    (let ((pt (point))
+          (r (lispy-dotimes arg
+               (when (= (point) (point-max))
+                 (error "Reached end of buffer"))
+               (forward-list))))
+      ;; `forward-list' returns true at and of buffer
+      (if (or (null r)
+              (= pt (point))
+              (and (not (lispy-right-p))
+                   (progn
+                     (backward-list)
+                     (forward-list)
+                     (= pt (point)))))
+          (prog1 nil
+            (lispy--out-forward 1))
+        (point)))))
 
 (defun lispy-backward (arg)
   "Move backward list ARG times or until error.
 If couldn't move backward at least once, move up backward and return nil."
   (interactive "p")
-  (when (= arg 0)
-    (setq arg 2000))
-  (lispy--exit-string)
-  (let ((bnd (lispy--bounds-comment)))
-    (when bnd
-      (goto-char (car bnd))))
-  (let ((pt (point))
-        (r (lispy-dotimes arg
-             (when (= (point) (point-min))
-               (error "Reached beginning of buffer"))
-             (backward-list))))
-    ;; `backward-list' returns true at beginning of buffer
-    (if (or (null r)
-            (= pt (point))
-            (and (not (lispy-left-p))
-                 (progn
-                   (forward-list)
-                   (backward-list)
-                   (= pt (point)))))
-        (prog1 nil
-          (condition-case nil
-              (progn
-                (lispy--out-forward 1)
-                (backward-list))
-            (error
-             (progn
-               (goto-char pt)
-               (up-list -1)))))
-      (point))))
+  (if (or
+       (looking-at "\"")
+       (looking-back "\""))
+      (insert "[")
+    (when (= arg 0)
+      (setq arg 2000))
+    (lispy--exit-string)
+    (let ((bnd (lispy--bounds-comment)))
+      (when bnd
+        (goto-char (car bnd))))
+    (let ((pt (point))
+          (r (lispy-dotimes arg
+               (when (= (point) (point-min))
+                 (error "Reached beginning of buffer"))
+               (backward-list))))
+      ;; `backward-list' returns true at beginning of buffer
+      (if (or (null r)
+              (= pt (point))
+              (and (not (lispy-left-p))
+                   (progn
+                     (forward-list)
+                     (backward-list)
+                     (= pt (point)))))
+          (prog1 nil
+            (condition-case nil
+                (progn
+                  (lispy--out-forward 1)
+                  (backward-list))
+              (error
+               (progn
+                 (goto-char pt)
+                 (up-list -1)))))
+        (point)))))
 
 (defun lispy-right (arg)
   "Move outside list forwards ARG times.
