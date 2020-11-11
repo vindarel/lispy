@@ -566,6 +566,9 @@ otherwise call function `lispy-right' and return nil."
       (insert "]")
     (when (= arg 0)
       (setq arg 2000))
+    (when (= arg 4)
+      (insert "]")
+      (return-from lispy-forward))
     (lispy--exit-string)
     (let ((bnd (lispy--bounds-comment)))
       (when bnd
@@ -597,6 +600,9 @@ If couldn't move backward at least once, move up backward and return nil."
       (insert "[")
     (when (= arg 0)
       (setq arg 2000))
+    (when (= arg 4)
+      (insert "[")
+      (return-from lispy-backward))
     (lispy--exit-string)
     (let ((bnd (lispy--bounds-comment)))
       (when bnd
